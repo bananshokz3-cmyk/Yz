@@ -1,0 +1,40 @@
+.github/workflows/android.yml
+name: Android Build APK
+
+# Startet den Build bei jedem Push oder manuell über die Actions-Oberfläche
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Quellcode aus dem Repository laden
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      # 2. Java 17 Laufzeitumgebung einrichten
+      - name: Java 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. Ausführungsrechte für das Build-Skript vergeben
+      - name: Gradle Wrapper Rechte setzen
+        run: chmod +x gradlew
+        continue-on-error: true
+
+      # 4. APK mit Gradle kompilieren
+      - name: Debug APK bauen
+        run: ./gradlew assembleDebug --stacktrace
+
+      # 5. Fertige APK als Artefakt zum Download bereitstellen
+      - name: APK als Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
